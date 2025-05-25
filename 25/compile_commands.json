@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "/Users/jojikris/Desktop/CP/25",
+    "command": "g++ -std=c++20 -Wall -Wno-error=header a.cpp -o a",
+    "file": "a.cpp"
+  }
+]
