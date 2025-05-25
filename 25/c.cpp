@@ -4,13 +4,14 @@ using namespace std;
 typedef long long ll;
 
 int adj[305][305], n, k;
-// HEBAT OVERFLOW
 vector<ll> ans;
 
 void floydwarshall(int u, int v, int w, int idx) {
     ll sum = 0;
     adj[u][v] = min(adj[u][v], w);
     adj[v][u] = adj[u][v];
+    // Use floyd-warshall to just minimize the path that is connected with
+    // u and v, there are 2 options, either to take the path UV or VU.
     for (int i = 1; i <= n; i++) {
         for (int j = 1; j <= n; j++) {
             adj[i][j] = min(adj[i][j], adj[i][u] + w + adj[v][j]);
