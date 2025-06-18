@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "/Users/jojikris/Desktop/Codeforces/540",
+    "command": "g++ -std=c++20 -Wall -Wno-error=header c.cpp -o c",
+    "file": "c.cpp"
+  }
+]
