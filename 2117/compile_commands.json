@@ -1,7 +1,0 @@
-[
-  {
-    "directory": "/Users/jojikris/Desktop/Codeforces/2117",
-    "command": "g++ -std=c++20 -Wall -Wno-error=header a.cpp -o a",
-    "file": "a.cpp"
-  }
-]
