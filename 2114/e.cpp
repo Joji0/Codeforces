@@ -1,51 +1,44 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-typedef long long ll;
+using ll = long long;
 
-vector<vector<int>> grid, vis;
-vector<int> ans;
-int n, m;
+vector<ll> adj[200005];
+ll n, d[200005], dpmin[200005], dpmax[200005];
+bool vis[200005];
 
-const int dx[4] = {0, 1, 0, -1}, dy[4] = {-1, 0, 1, 0};
-
-void dfs(int x, int y, int &cnt) {
-    if (vis[x][y])
+void dfs(int node, int par) {
+    if (vis[node]) {
         return;
-    vis[x][y] = 1;
-    cnt++;
-    for (int i = 0; i < 4; i++) {
-        int nx = x + dx[i], ny = y + dy[i];
-        if (nx >= 0 && nx < n && ny >= 0 && ny < m && !vis[nx][ny] &&
-            !(grid[x][y] & (1 << i))) {
-            dfs(nx, ny, cnt);
-        }
+    }
+    vis[node] = true;
+    dpmin[node] = min(d[node], d[node] - dpmax[par]);
+    dpmax[node] = max(d[node], d[node] - dpmin[par]);
+    for (auto &u : adj[node]) {
+        dfs(u, node);
     }
 }
 
 void solve() {
-    cin >> n >> m;
-    grid.assign(n, vector<int>(m));
-    vis.assign(n, vector<int>(m, 0));
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            cin >> grid[i][j];
-        }
+    cin >> n;
+    for (int i = 0; i <= n; i++) {
+        adj[i].clear();
+        vis[i] = false;
+        dpmax[i] = dpmin[i] = d[i] = 0;
     }
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            if (!vis[i][j]) {
-                int cnt = 0;
-                dfs(i, j, cnt);
-                ans.push_back(cnt);
-            }
-        }
+    for (int i = 1; i <= n; i++) {
+        cin >> d[i];
     }
-    sort(ans.rbegin(), ans.rend());
-    for (auto &x : ans) {
-        cout << x << " ";
+    for (int i = 0; i < n - 1; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
     }
-    cout << '\n';
+    dfs(1, -1);
+    for (int i = 1; i <= n; i++) {
+        cout << dpmax[i] << " \n"[i == n];
+    }
 }
 
 int main() {
@@ -53,7 +46,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
