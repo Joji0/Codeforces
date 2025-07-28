@@ -1,0 +1,149 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+template <typename T> istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x : v)
+        in >> x;
+    return in;
+}
+template <typename T> ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (auto &x : v)
+        out << x << ' ';
+    return out;
+}
+template <typename T> istream &operator>>(istream &in, vector<vector<T>> &vv) {
+    for (auto &v : vv)
+        in >> v;
+    return in;
+}
+template <typename T>
+ostream &operator<<(ostream &out, const vector<vector<T>> &vv) {
+    for (const auto &v : vv)
+        out << v << '\n';
+    return out;
+}
+template <typename T> void print(const vector<T> &v) {
+    for (auto &x : v) {
+        cout << x << " ";
+    }
+    cout << '\n';
+}
+template <typename T> void _print(const T &x) { cerr << x; }
+template <typename T> void _print(const vector<T> &v) {
+    cerr << '[';
+    bool first = true;
+    for (const auto &x : v) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(x);
+    }
+    cerr << ']';
+}
+template <typename T> void _print(const vector<vector<T>> &vv) {
+    cerr << "DEBUG:\n[\n";
+    for (const auto &v : vv) {
+        cerr << "  ";
+        _print(v);
+        cerr << '\n';
+    }
+    cerr << "]\n";
+}
+template <typename T> bool chmax(T &a, const T &b) {
+    if (a < b) {
+        a = b;
+        return true;
+    }
+    return false;
+}
+template <typename T> bool chmin(T &a, const T &b) {
+    if (b < a) {
+        a = b;
+        return true;
+    }
+    return false;
+}
+template <typename T> void offset(int64_t o, vector<T> &x) {
+    for (auto &a : x) {
+        a += o;
+    }
+}
+inline int popcnt64(int64_t x) { return __builtin_popcountll(x); }
+inline int safe_ctz64(int64_t x) { return x ? __builtin_ctzll(x) : 64; }
+inline int safe_clz64(int64_t x) { return x ? __builtin_clzll(x) : 64; }
+inline int64_t lsone64(int64_t x) { return x & -x; }
+inline int64_t msbone64(int64_t x) { return 1LL << (63 - __builtin_clzll(x)); }
+inline bool ispow2_64(int64_t x) { return x && !(x & (x - 1)); }
+inline int popcnt32(int x) { return __builtin_popcount(x); }
+inline int safe_ctz32(int x) { return x ? __builtin_ctz(x) : 32; }
+inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
+inline int lsone32(int x) { return x & -x; }
+inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
+inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#define debug(x)                                                               \
+    cerr << #x << " = ";                                                       \
+    _print(x);                                                                 \
+    cerr << '\n'
+#define all(c) (c).begin(), (c).end()
+#define rall(c) (c).rbegin(), (c).rend()
+#define vt vector
+#define pb push_back
+#define sz(x) (int)(x).size()
+#define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
+#define F_OR1(e) F_OR(i, 0, e, 1)
+#define F_OR2(i, e) F_OR(i, 0, e, 1)
+#define F_OR3(i, b, e) F_OR(i, b, e, 1)
+#define F_OR4(i, b, e, s) F_OR(i, b, e, s)
+#define GET5(a, b, c, d, e, ...) e
+#define F_ORC(...) GET5(__VA_ARGS__, F_OR4, F_OR3, F_OR2, F_OR1)
+#define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
+#define EACH(x, a) for (auto &x : a)
+
+void solve() {
+    // The idea is to use dijkstra to solve this shortest path problem. The
+    // problem is kinda easy at this point because we just need to use template
+    // dijkstra with slowness factor in mind (not a simple distance array but
+    // rather matrix where dis[node][slow] is the minimum time to reach node
+    // with slowness slow kinda like dp). We also need to consider if we found a
+    // bike with better slowness factor, we will choose such bike.
+    int n, m;
+    cin >> n >> m;
+    vt<vt<pair<int64_t, int64_t>>> adj(n + 5);
+    vt<vt<int64_t>> dis(n + 5, vt<int64_t>(1001, 1e18));
+    vt<int64_t> s(n + 5);
+    FOR(m) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        adj[u].push_back({v, w});
+        adj[v].push_back({u, w});
+    }
+    FOR(i, 1, n + 1) cin >> s[i];
+    // current distance, current node, current best bike slowness factor
+    priority_queue<array<int64_t, 3>, vt<array<int64_t, 3>>, greater<>> pq;
+    pq.push({0, 1, s[1]});
+    dis[1][s[1]] = 0;
+    while (!pq.empty()) {
+        auto [dist, node, slow] = pq.top();
+        pq.pop();
+        int64_t newbike = min(slow, s[node]);
+        for (auto &[v, weight] : adj[node]) {
+            if (chmin(dis[v][newbike], dist + weight * newbike)) {
+                pq.push({dis[v][newbike], v, newbike});
+            }
+        }
+    }
+    cout << *min_element(all(dis[n])) << '\n';
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int t = 1;
+    cin >> t;
+    while (t--) {
+        solve();
+    }
+
+    return 0;
+}
