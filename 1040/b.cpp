@@ -106,50 +106,17 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-const char alph[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
-
-void backtrack(string s, int n, vt<string> &combi) {
-    if (sz(s) == n) {
-        combi.pb(s);
-        return;
-    }
-    FOR(6) {
-        s.pb(alph[i]);
-        backtrack(s, n, combi);
-        s.pop_back();
-    }
-    return;
-}
-
 void solve() {
-    int n, q;
-    cin >> n >> q;
-    map<string, string> mp;
-    FOR(q) {
-        string a, b;
-        cin >> a >> b;
-        mp[a] = b;
-    }
-    vt<string> combi;
-    string s;
-    backtrack(s, n, combi);
-    int ans = 0;
-    for (auto &str : combi) {
-        while (sz(str) != 1) {
-            string front = str.substr(0, 2), temp;
-            if (!mp.contains(front))
-                break;
-            else {
-                temp = mp[front];
-                FOR(i, 2, sz(str)) { temp += str[i]; }
-                str = temp;
-            }
-        }
-        if (str == "a") {
-            ans++;
-        }
-    }
+    int n, k;
+    cin >> n >> k;
+    int ans = (n + 2 * k) / (2 * k + 1);
     cout << ans << '\n';
+    int idx = max(1, n - k - (ans - 1) * (2 * k + 1));
+    FOR(ans) {
+        cout << idx << " ";
+        idx += 2 * k + 1;
+    }
+    cout << '\n';
 }
 
 int main() {

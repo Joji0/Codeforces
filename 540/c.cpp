@@ -41,11 +41,11 @@ void solve() {
     cin >> r1 >> c1 >> r2 >> c2;
     r1--, c1--, r2--, c2--;
     dfs(r1, c1);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            cout << grid[i][j] << " \n"[j == m - 1];
-        }
-    }
+    // for (int i = 0; i < n; i++) {
+    //     for (int j = 0; j < m; j++) {
+    //         cout << grid[i][j] << " \n"[j == m - 1];
+    //     }
+    // }
     cout << (grid[r2][c2] == 'C' ? "YES\n" : "NO\n");
 }
 

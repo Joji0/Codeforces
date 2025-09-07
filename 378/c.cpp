@@ -106,50 +106,66 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-const char alph[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
-
-void backtrack(string s, int n, vt<string> &combi) {
-    if (sz(s) == n) {
-        combi.pb(s);
-        return;
-    }
-    FOR(6) {
-        s.pb(alph[i]);
-        backtrack(s, n, combi);
-        s.pop_back();
-    }
-    return;
-}
+const int dx[4] = {-1, 1, 0, 0}, dy[4] = {0, 0, 1, -1};
 
 void solve() {
-    int n, q;
-    cin >> n >> q;
-    map<string, string> mp;
-    FOR(q) {
-        string a, b;
-        cin >> a >> b;
-        mp[a] = b;
+    int n, m, k;
+    cin >> n >> m >> k;
+    vt<vt<int>> dis(n, vt<int>(m)), vis(n, vt<int>(m, 0));
+    vt<vt<char>> maze(n, vt<char>(m));
+    int sx = -1, sy = -1;
+    FOR(n) {
+        FOR(j, m) { cin >> maze[i][j]; }
     }
-    vt<string> combi;
-    string s;
-    backtrack(s, n, combi);
-    int ans = 0;
-    for (auto &str : combi) {
-        while (sz(str) != 1) {
-            string front = str.substr(0, 2), temp;
-            if (!mp.contains(front))
-                break;
-            else {
-                temp = mp[front];
-                FOR(i, 2, sz(str)) { temp += str[i]; }
-                str = temp;
+    int global = 100;
+    FOR(n) {
+        FOR(j, m) {
+            if (maze[i][j] != '.')
+                continue;
+            int cnt = 0;
+            FOR(k, 4) {
+                int nx = i + dx[k], ny = j + dy[k];
+                if (nx >= 0 && nx < n && ny >= 0 && ny < m)
+                    cnt += maze[nx][ny] == '.';
+            }
+            if (cnt < global) {
+                global = cnt;
+                sx = i, sy = j;
             }
         }
-        if (str == "a") {
-            ans++;
+    }
+    queue<array<int, 3>> q;
+    q.push({sx, sy, 0});
+    vis[sx][sy] = 1;
+    dis[sx][sy] = 0;
+    vt<array<int, 3>> cand = {{sx, sy, 0}};
+    while (!q.empty()) {
+        auto [x, y, dist] = q.front();
+        q.pop();
+        FOR(4) {
+            int nx = x + dx[i], ny = y + dy[i];
+            if (nx >= 0 && nx < n && ny >= 0 && ny < m && maze[nx][ny] == '.' &&
+                !vis[nx][ny]) {
+                dis[nx][ny] = dist + 1;
+                vis[nx][ny] = true;
+                q.push({nx, ny, dist + 1});
+                cand.pb({nx, ny, dist + 1});
+            }
         }
     }
-    cout << ans << '\n';
+    sort(all(cand), [](const auto &a, const auto &b) { return a[2] > b[2]; });
+    set<pair<int, int>> selected;
+    FOR(k) { selected.insert({cand[i][0], cand[i][1]}); }
+    FOR(n) {
+        FOR(j, m) {
+            if (!selected.contains({i, j})) {
+                cout << maze[i][j];
+            } else {
+                cout << 'X';
+            }
+        }
+        cout << '\n';
+    }
 }
 
 int main() {

@@ -106,50 +106,37 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-const char alph[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
-
-void backtrack(string s, int n, vt<string> &combi) {
-    if (sz(s) == n) {
-        combi.pb(s);
-        return;
-    }
-    FOR(6) {
-        s.pb(alph[i]);
-        backtrack(s, n, combi);
-        s.pop_back();
-    }
-    return;
-}
-
 void solve() {
-    int n, q;
-    cin >> n >> q;
-    map<string, string> mp;
-    FOR(q) {
-        string a, b;
+    int n, x;
+    cin >> n >> x;
+    vt<vt<int>> Tree(n);
+    FOR(n - 1) {
+        int a, b;
         cin >> a >> b;
-        mp[a] = b;
+        a--, b--;
+        Tree[a].pb(b);
+        Tree[b].pb(a);
     }
-    vt<string> combi;
-    string s;
-    backtrack(s, n, combi);
-    int ans = 0;
-    for (auto &str : combi) {
-        while (sz(str) != 1) {
-            string front = str.substr(0, 2), temp;
-            if (!mp.contains(front))
-                break;
-            else {
-                temp = mp[front];
-                FOR(i, 2, sz(str)) { temp += str[i]; }
-                str = temp;
-            }
+    vt<int> Alice(n), Bob(n);
+    Alice[0] = 0;
+    function<void(int, int, vt<int> &)> dfs = [&](int node, int par,
+                                                  vt<int> &dis) {
+        EACH(nxt, Tree[node]) {
+            if (nxt == par)
+                continue;
+            dis[nxt] = dis[node] + 1;
+            dfs(nxt, node, dis);
         }
-        if (str == "a") {
-            ans++;
+    };
+    dfs(0, -1, Alice);
+    dfs(x - 1, -1, Bob);
+    int64_t curr = Alice[x - 1];
+    FOR(n) {
+        if (Alice[i] > curr && Bob[i] < Alice[i]) {
+            curr = Alice[i];
         }
     }
-    cout << ans << '\n';
+    cout << 2 * curr << '\n';
 }
 
 int main() {

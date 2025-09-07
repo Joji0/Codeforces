@@ -106,50 +106,38 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-const char alph[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
-
-void backtrack(string s, int n, vt<string> &combi) {
-    if (sz(s) == n) {
-        combi.pb(s);
-        return;
-    }
-    FOR(6) {
-        s.pb(alph[i]);
-        backtrack(s, n, combi);
-        s.pop_back();
-    }
-    return;
-}
-
 void solve() {
-    int n, q;
-    cin >> n >> q;
-    map<string, string> mp;
-    FOR(q) {
-        string a, b;
-        cin >> a >> b;
-        mp[a] = b;
+    int n;
+    cin >> n;
+    vt<array<int64_t, 5>> R(n);
+    FOR(n) {
+        FOR(j, 5) { cin >> R[i][j]; }
     }
-    vt<string> combi;
-    string s;
-    backtrack(s, n, combi);
-    int ans = 0;
-    for (auto &str : combi) {
-        while (sz(str) != 1) {
-            string front = str.substr(0, 2), temp;
-            if (!mp.contains(front))
-                break;
-            else {
-                temp = mp[front];
-                FOR(i, 2, sz(str)) { temp += str[i]; }
-                str = temp;
-            }
+    int winn = 0;
+    FOR(i, 1, n) {
+        int cnt = 0;
+        FOR(j, 5) {
+            if (R[winn][j] < R[i][j])
+                cnt++;
         }
-        if (str == "a") {
-            ans++;
+        if (cnt < 3) {
+            winn = i;
         }
     }
-    cout << ans << '\n';
+    bool ok = true;
+    FOR(n) {
+        if (i == winn)
+            continue;
+        int cnt = 0;
+        FOR(j, 5) {
+            if (R[winn][j] < R[i][j])
+                cnt++;
+        }
+        if (cnt < 3) {
+            ok = false;
+        }
+    }
+    cout << (ok ? winn + 1 : -1) << '\n';
 }
 
 int main() {
@@ -157,7 +145,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

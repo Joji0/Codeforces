@@ -106,50 +106,38 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-const char alph[6] = {'a', 'b', 'c', 'd', 'e', 'f'};
+const int maxN = 505;
+int64_t memo[maxN][maxN];
 
-void backtrack(string s, int n, vt<string> &combi) {
-    if (sz(s) == n) {
-        combi.pb(s);
-        return;
+int64_t dp(int l, int r, const vt<int> &C) {
+    if (l > r) {
+        return 0;
     }
-    FOR(6) {
-        s.pb(alph[i]);
-        backtrack(s, n, combi);
-        s.pop_back();
+    if (l == r) {
+        return 1;
     }
-    return;
+    if (memo[l][r] != -1) {
+        return memo[l][r];
+    }
+    int64_t ans = 1 + dp(l + 1, r, C);
+    if (l + 1 <= r && C[l] == C[l + 1]) {
+        chmin(ans, 1 + dp(l + 2, r, C));
+    }
+    FOR(tr, l + 2, r + 1) {
+        if (C[l] == C[tr]) {
+            chmin(ans, dp(l + 1, tr - 1, C) + dp(tr + 1, r, C));
+        }
+    }
+    return memo[l][r] = ans;
 }
 
 void solve() {
-    int n, q;
-    cin >> n >> q;
-    map<string, string> mp;
-    FOR(q) {
-        string a, b;
-        cin >> a >> b;
-        mp[a] = b;
-    }
-    vt<string> combi;
-    string s;
-    backtrack(s, n, combi);
-    int ans = 0;
-    for (auto &str : combi) {
-        while (sz(str) != 1) {
-            string front = str.substr(0, 2), temp;
-            if (!mp.contains(front))
-                break;
-            else {
-                temp = mp[front];
-                FOR(i, 2, sz(str)) { temp += str[i]; }
-                str = temp;
-            }
-        }
-        if (str == "a") {
-            ans++;
-        }
-    }
-    cout << ans << '\n';
+    int n;
+    cin >> n;
+    vt<int> C(n);
+    cin >> C;
+    memset(memo, -1, sizeof(memo));
+    cout << dp(0, n - 1, C) << '\n';
 }
 
 int main() {
