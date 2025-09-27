@@ -106,54 +106,49 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-struct DSU {
-    vector<int> parent, sz;
-    DSU(int n) {
-        parent.resize(n);
-        iota(parent.begin(), parent.end(), 0);
-        sz.assign(n, 1);
-    }
-    int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
-    }
-    bool join(int a, int b) {
-        a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
-    }
-};
-
 void solve() {
-    int n;
-    cin >> n;
-    DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
+    int64_t n, m;
+    cin >> n >> m;
+    vt<int64_t> Cnt(m + 1, 0);
+    int ok = 0;
+    FOR(n) {
+        int si;
+        cin >> si;
+        if (si == m) {
+            ok++;
+        }
+        FOR(j, si) {
+            int64_t val;
+            cin >> val;
+            Cnt[val]++;
         }
     }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
+    FOR(i, 1, m + 1) {
+        if (!Cnt[i]) {
+            cout << "NO\n";
+            return;
         }
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
+    if ((ok && n >= 3) || (n == 2 && ok == 2)) {
+        cout << "YES\n";
+        return;
+    }
+    if (n == 2) {
+        cout << "NO\n";
+        return;
+    }
+    int mult = 0;
+    FOR(i, 1, m + 1) {
+        if (Cnt[i] >= 3) {
+            cout << "YES\n";
+            return;
+        } else if (Cnt[i] == 2)
+            mult++;
+    }
+    if (mult >= 2) {
+        cout << "YES\n";
+    } else {
+        cout << "NO\n";
     }
 }
 
@@ -162,7 +157,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

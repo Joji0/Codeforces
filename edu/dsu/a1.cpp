@@ -116,44 +116,34 @@ struct DSU {
     int find(int x) {
         return (x == parent[x] ? x : parent[x] = find(parent[x]));
     }
-    bool join(int a, int b) {
+    void join(int a, int b) {
         a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
+        if (a != b) {
+            if (sz[a] < sz[b])
+                swap(a, b);
+            parent[b] = a;
+            sz[a] += sz[b];
+        }
     }
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    int n, m;
+    cin >> n >> m;
     DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
+    FOR(m) {
+        string s;
         int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
+        cin >> s >> u >> v;
+        if (s == "union") {
+            dsu.join(u, v);
+        } else {
+            if (dsu.find(u) == dsu.find(v)) {
+                cout << "YES\n";
+            } else {
+                cout << "NO\n";
+            }
         }
-    }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
-    }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
     }
 }
 

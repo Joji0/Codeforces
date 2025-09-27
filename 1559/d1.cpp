@@ -113,47 +113,47 @@ struct DSU {
         iota(parent.begin(), parent.end(), 0);
         sz.assign(n, 1);
     }
-    int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
-    }
-    bool join(int a, int b) {
+    int find(int x) { return (x == parent[x] ? x : find(parent[x])); }
+    void join(int a, int b) {
         a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
+        if (a != b) {
+            if (sz[a] < sz[b])
+                swap(a, b);
+            parent[b] = a;
+            sz[a] += sz[b];
+        }
     }
+    bool canJoin(int a, int b) { return (find(a) != find(b)); }
 };
 
 void solve() {
-    int n;
-    cin >> n;
-    DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
+    int n, m, d;
+    cin >> n >> m >> d;
+    DSU Mc(n + 1), Di(n + 1);
+    FOR(m) {
         int u, v;
         cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
-        }
+        Mc.join(u, v);
     }
+    FOR(d) {
+        int u, v;
+        cin >> u >> v;
+        Di.join(u, v);
+    }
+    vt<array<int, 2>> ans;
     FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
+        FOR(j, 1, n + 1) {
+            if (Mc.canJoin(i, j) && Di.canJoin(i, j)) {
+                ans.pb({i, j});
+                Mc.join(i, j);
+                Di.join(i, j);
+            }
         }
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
+    cout << sz(ans) << '\n';
+    EACH(el, ans) {
+        auto [a, b] = el;
+        cout << a << " " << b << '\n';
     }
 }
 

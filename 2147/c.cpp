@@ -106,55 +106,39 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-struct DSU {
-    vector<int> parent, sz;
-    DSU(int n) {
-        parent.resize(n);
-        iota(parent.begin(), parent.end(), 0);
-        sz.assign(n, 1);
-    }
-    int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
-    }
-    bool join(int a, int b) {
-        a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
-    }
-};
-
 void solve() {
     int n;
-    cin >> n;
-    DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
+    string s;
+    bool ok = true;
+    cin >> n >> s;
+    if (n >= 2) {
+        if (s[0] == '0')
+            s[1] = 'Y';
+        if (s[n - 1] == '0')
+            s[n - 2] = 'Y';
+    }
+    FOR(i, 1, n - 1) {
+        if (s[i] == '0') {
+            if (s[i - 1] == 'X' || s[i - 1] == 'Y') {
+                s[i - 1] = 'Y';
+                continue;
+            } else if (s[i + 1] == 'X' || s[i + 1] == 'Y') {
+                s[i + 1] = 'Y';
+                continue;
+            }
+            if (s[i - 1] == '1') {
+                s[i - 1] = 'X';
+            } else if (s[i + 1] == '1') {
+                s[i + 1] = 'X';
+            }
         }
     }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
+    debug(s);
+    FOR(n) {
+        if (s[i] == 'X')
+            ok = false;
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
-    }
+    cout << (ok ? "YES\n" : "NO\n");
 }
 
 int main() {
@@ -162,7 +146,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

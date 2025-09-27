@@ -106,55 +106,53 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-struct DSU {
-    vector<int> parent, sz;
-    DSU(int n) {
-        parent.resize(n);
-        iota(parent.begin(), parent.end(), 0);
-        sz.assign(n, 1);
-    }
-    int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
-    }
-    bool join(int a, int b) {
-        a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
-    }
-};
-
 void solve() {
-    int n;
-    cin >> n;
-    DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
+    int n, m;
+    cin >> n >> m;
+    vt<vt<int>> grid(n, vt<int>(m)), dp(n, vt<int>(m, 0));
+    vt<vt<vt<bool>>> ok(n, vt<vt<bool>>(m, vt<bool>(4, false)));
+    FOR(n) {
+        FOR(j, m) { cin >> grid[i][j]; }
+    }
+    FOR(k, 4) {
+        if (k == 0) {
+            FOR(i, n) {
+                ok[i][0][k] = grid[i][0];
+                FOR(j, 1, m) { ok[i][j][k] = ok[i][j - 1][k] | grid[i][j - 1]; }
+            }
+        } else if (k == 1) {
+            FOR(i, n) {
+                ok[i][m - 1][k] = grid[i][m - 1];
+                FOR(j, m - 2, -1, -1) {
+                    ok[i][j][k] = ok[i][j + 1][k] | grid[i][j + 1];
+                }
+            }
+        } else if (k == 2) {
+            FOR(j, m) {
+                ok[0][j][k] = grid[0][j];
+                FOR(i, 1, n) { ok[i][j][k] = ok[i - 1][j][k] | grid[i - 1][j]; }
+            }
+        } else {
+            FOR(j, m) {
+                ok[n - 1][j][k] = grid[n - 1][j];
+                FOR(i, n - 2, -1, -1) {
+                    ok[i][j][k] = ok[i + 1][j][k] | grid[i + 1][j];
+                }
+            }
         }
     }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
+    FOR(n) {
+        FOR(j, m) {
+            if (grid[i][j] == 0) {
+                FOR(k, 4) { dp[i][j] += ok[i][j][k]; }
+            }
         }
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
+    int64_t ans = 0;
+    FOR(n) {
+        FOR(j, m) { ans += dp[i][j]; }
     }
+    cout << ans << '\n';
 }
 
 int main() {

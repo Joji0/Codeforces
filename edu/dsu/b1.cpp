@@ -107,53 +107,51 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define EACH(x, a) for (auto &x : a)
 
 struct DSU {
-    vector<int> parent, sz;
+    vector<int> parent, sz, Mn, Mx;
     DSU(int n) {
         parent.resize(n);
+        Mn.resize(n);
+        Mx.resize(n);
         iota(parent.begin(), parent.end(), 0);
+        iota(Mn.begin(), Mn.end(), 0);
+        iota(Mx.begin(), Mx.end(), 0);
         sz.assign(n, 1);
     }
     int find(int x) {
         return (x == parent[x] ? x : parent[x] = find(parent[x]));
     }
-    bool join(int a, int b) {
+    void join(int a, int b) {
         a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
+        if (a != b) {
+            if (sz[a] < sz[b])
+                swap(a, b);
+            parent[b] = a;
+            sz[a] += sz[b];
+            chmin(Mn[a], Mn[b]);
+            chmin(Mn[b], Mn[a]);
+            chmax(Mx[a], Mx[b]);
+            chmax(Mx[b], Mx[a]);
+        }
     }
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    int n, m;
+    cin >> n >> m;
     DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
+    FOR(m) {
+        string s;
+        cin >> s;
+        if (s == "union") {
+            int u, v;
+            cin >> u >> v;
+            dsu.join(u, v);
+        } else {
+            int x;
+            cin >> x;
+            x = dsu.find(x);
+            cout << dsu.Mn[x] << " " << dsu.Mx[x] << " " << dsu.sz[x] << '\n';
         }
-    }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
-    }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
     }
 }
 

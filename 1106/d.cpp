@@ -106,55 +106,36 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-struct DSU {
-    vector<int> parent, sz;
-    DSU(int n) {
-        parent.resize(n);
-        iota(parent.begin(), parent.end(), 0);
-        sz.assign(n, 1);
-    }
-    int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
-    }
-    bool join(int a, int b) {
-        a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
-    }
-};
+const int64_t INF = 1e18;
 
 void solve() {
-    int n;
-    cin >> n;
-    DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
-        }
+    // The idea is to use priority queue to track the current smallest vertex
+    // number that is reachable from our current graph condition.
+    int64_t N, M;
+    cin >> N >> M;
+    vt<vt<int64_t>> Graph(N + 1);
+    FOR(M) {
+        int64_t U, V;
+        cin >> U >> V;
+        Graph[U].pb(V);
+        Graph[V].pb(U);
     }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
+    priority_queue<int64_t, vt<int64_t>, greater<>> pq;
+    vt<int64_t> dis(N + 1, INF);
+    pq.push(1);
+    int curr = 0;
+    while (!pq.empty()) {
+        int64_t best = pq.top();
+        pq.pop();
+        if (dis[best] != INF)
+            continue;
+        dis[best] = curr++;
+        EACH(nxt, Graph[best]) { pq.push(nxt); }
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
-    }
+    vt<array<int64_t, 2>> ord(N);
+    FOR(N) { ord[i] = {dis[i + 1], i + 1}; }
+    sort(all(ord), [](const auto &a, const auto &b) { return (a[0] < b[0]); });
+    FOR(N) { cout << ord[i][1] << " \n"[i == N - 1]; }
 }
 
 int main() {

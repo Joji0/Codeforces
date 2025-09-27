@@ -107,53 +107,65 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define EACH(x, a) for (auto &x : a)
 
 struct DSU {
-    vector<int> parent, sz;
+    vector<int> parent, sz, punyaTim, punyaSendiri;
     DSU(int n) {
         parent.resize(n);
+        punyaTim.assign(n, 0);
+        punyaSendiri.assign(n, 0);
         iota(parent.begin(), parent.end(), 0);
         sz.assign(n, 1);
     }
     int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
+        if (x == parent[x]) {
+            return x;
+        }
+        int p = parent[x];
+        int root = find(p);
+        punyaSendiri[x] += punyaSendiri[p];
+        return parent[x] = root;
     }
-    bool join(int a, int b) {
+    void join(int a, int b) {
         a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
+        if (a != b) {
+            if (sz[a] < sz[b])
+                swap(a, b);
+            parent[b] = a;
+            sz[a] += sz[b];
+            punyaSendiri[b] = punyaTim[b] - punyaTim[a];
+        }
+    }
+    void add(int x, int exp) {
+        int root = find(x);
+        punyaTim[root] += exp;
+    }
+    int getExp(int x) {
+        int root = find(x);
+        return punyaTim[root] + punyaSendiri[x];
     }
 };
 
 void solve() {
-    int n;
-    cin >> n;
+    int n, m;
+    cin >> n >> m;
     DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
+    FOR(m) {
+        string type;
+        cin >> type;
+        if (type == "join") {
+            int u, v;
+            cin >> u >> v;
+            dsu.join(u, v);
+        } else if (type == "add") {
+            int x, exp;
+            cin >> x >> exp;
+            dsu.add(x, exp);
+        } else {
+            int x;
+            cin >> x;
+            cout << dsu.getExp(x) << '\n';
         }
-    }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
-    }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
+        debug(dsu.punyaSendiri);
+        debug(dsu.punyaTim);
     }
 }
 

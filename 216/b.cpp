@@ -106,55 +106,48 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-struct DSU {
-    vector<int> parent, sz;
-    DSU(int n) {
-        parent.resize(n);
-        iota(parent.begin(), parent.end(), 0);
-        sz.assign(n, 1);
+int ans = 0;
+
+void dfs(int node, int par, vt<vt<int>> &G, vt<int> &Colors, int curr) {
+    if (Colors[node] != -1) {
+        if (Colors[node] != curr) {
+            ans++;
+        }
+        return;
     }
-    int find(int x) {
-        return (x == parent[x] ? x : parent[x] = find(parent[x]));
+    Colors[node] = curr;
+    EACH(nxt, G[node]) {
+        if (nxt == par)
+            continue;
+        dfs(nxt, node, G, Colors, 1 ^ curr);
     }
-    bool join(int a, int b) {
-        a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
-    }
-};
+}
 
 void solve() {
-    int n;
-    cin >> n;
-    DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
-    FOR(n - 1) {
+    int n, m;
+    cin >> n >> m;
+    vt<vt<int>> Graph(n);
+    vt<int> Colors(n, -1);
+    FOR(m) {
         int u, v;
         cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
-        }
+        u--, v--;
+        Graph[u].pb(v);
+        Graph[v].pb(u);
     }
-    FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
+    FOR(n) {
+        if (Colors[i] == -1)
+            dfs(i, -1, Graph, Colors, 0);
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
+    ans /= 2;
+    if (n % 2) {
+        if (ans % 2 == 0)
+            ans++;
+    } else {
+        if (ans % 2)
+            ans++;
     }
+    cout << ans << '\n';
 }
 
 int main() {

@@ -106,6 +106,8 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
+const int64_t MOD = 1e9 + 7;
+
 struct DSU {
     vector<int> parent, sz;
     DSU(int n) {
@@ -116,45 +118,48 @@ struct DSU {
     int find(int x) {
         return (x == parent[x] ? x : parent[x] = find(parent[x]));
     }
-    bool join(int a, int b) {
+    void join(int a, int b) {
         a = find(a), b = find(b);
-        if (a == b)
-            return false;
-        if (sz[a] < sz[b])
-            swap(a, b);
-        parent[b] = a;
-        sz[a] += sz[b];
-        return true;
+        if (a != b) {
+            if (sz[a] < sz[b])
+                swap(a, b);
+            parent[b] = a;
+            sz[a] += sz[b];
+        }
     }
 };
 
+int64_t getPow(int n, int k) {
+    int64_t ret = 1;
+    FOR(k) {
+        ret *= n;
+        ret %= MOD;
+    }
+    return ret;
+}
+
 void solve() {
-    int n;
-    cin >> n;
+    int n, k;
+    cin >> n >> k;
     DSU dsu(n + 1);
-    vt<array<int, 2>> cycles;
-    vt<int> roots;
-    set<int> seen;
     FOR(n - 1) {
-        int u, v;
-        cin >> u >> v;
-        if (!dsu.join(u, v)) {
-            cycles.pb({u, v});
-        }
+        int u, v, x;
+        cin >> u >> v >> x;
+        if (x)
+            continue;
+        dsu.join(u, v);
     }
+    int64_t all = getPow(n, k), sub = 0;
+    set<int> seen;
     FOR(i, 1, n + 1) {
-        int p = dsu.find(i);
-        if (!seen.contains(p)) {
-            seen.insert(p);
-            roots.pb(i);
-        }
+        int par = dsu.find(i);
+        if (seen.contains(par))
+            continue;
+        seen.insert(par);
+        sub += getPow(dsu.sz[par], k);
+        sub %= MOD;
     }
-    int t = sz(cycles);
-    cout << t << '\n';
-    FOR(t) {
-        auto [u, v] = cycles[i];
-        cout << u << " " << v << " " << roots[i] << " " << roots[i + 1] << '\n';
-    }
+    cout << (all - sub + MOD) % MOD << '\n';
 }
 
 int main() {
