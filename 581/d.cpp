@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,97 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
-    int n;
-
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
+bool ok1(vt<int> l, vt<int> w) {
+    set<int> uniq(all(l));
+    if (sz(uniq) != 1) {
+        return false;
     }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
-        }
-    }
+    int sum = 0;
+    FOR(3) { sum += w[i]; }
+    return (sum == l[0]);
+}
 
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
-        }
-    }
-
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
-};
+bool ok2(vt<int> l, vt<int> w) {
+    return (w[0] + w[1] == w[2] && (l[0] == l[1]) && l[0] + l[2] == w[2]);
+}
 
 void solve() {
-    int n;
-    cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
-    cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
-    FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+    vt<int> A(6);
+    string let = "ABC";
+    set<array<int, 2>> st;
+    map<char, array<int, 2>> mp;
+    FOR(6) { cin >> A[i]; }
+    FOR(i, 0, 6, 2) {
+        st.insert({A[i], A[i + 1]});
+        st.insert({A[i + 1], A[i]});
+        mp[let[i / 2]] = {A[i], A[i + 1]};
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
-    }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
-    }
-    cout << ans << '\n';
+    sort(all(A));
+    do {
+        vt<int> l, w;
+        FOR(6) {
+            if (i & 1) {
+                w.pb(A[i]);
+            } else {
+                l.pb(A[i]);
+            }
+        }
+        bool ok = true;
+        FOR(3) {
+            if (!(st.contains({l[i], w[i]}))) {
+                ok = false;
+            }
+        }
+        if (ok) {
+            vt<bool> used(3, false);
+            vt<char> ord(3);
+            FOR(j, 3) {
+                FOR(3) {
+                    if (((mp[let[i]][0] == l[j] && mp[let[i]][1] == w[j]) ||
+                         (mp[let[i]][0] == w[j] && mp[let[i]][1] == l[j])) &&
+                        !used[i]) {
+                        ord[j] = let[i];
+                        used[i] = true;
+                        break;
+                    }
+                }
+            }
+            if (ok1(l, w)) {
+                cout << l[0] << '\n';
+                FOR(accumulate(all(w), 0)) {
+                    int k;
+                    if (i < w[0]) {
+                        k = 0;
+                    } else if (i < w[0] + w[1]) {
+                        k = 1;
+                    } else {
+                        k = 2;
+                    }
+                    FOR(j, l[k]) { cout << ord[k]; }
+                    cout << '\n';
+                }
+                return;
+            } else if (ok2(l, w)) {
+                cout << l[0] + l[2] << '\n';
+                FOR(w[2]) {
+                    FOR(j, l[0] + l[2]) {
+                        if (j >= l[0]) {
+                            cout << ord[2];
+                        } else {
+                            if (i < w[0])
+                                cout << ord[0];
+                            else {
+                                cout << ord[1];
+                            }
+                        }
+                    }
+                    cout << '\n';
+                }
+                return;
+            }
+        }
+    } while (next_permutation(all(A)));
+    cout << "-1\n";
 }
 
 int main() {

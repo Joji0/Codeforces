@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,46 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
-    int n;
+const int maxN = 100069;
 
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
-    }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
-        }
-    }
-
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
-        }
-    }
-
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
+struct Vertex {
+    int l, r;
 };
 
 void solve() {
     int n;
     cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
-    cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
-    FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+    vt<vt<int>> Tree(n + 1);
+    vt<Vertex> A(n + 1);
+    FOR(i, 1, n + 1) { cin >> A[i].l >> A[i].r; }
+    FOR(n - 1) {
+        int u, v;
+        cin >> u >> v;
+        Tree[u].pb(v);
+        Tree[v].pb(u);
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
-    }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
-    }
-    cout << ans << '\n';
+    // Define dp[i][j] as the maximum beauty of subtree i if we picked the
+    // number j at vertex i (l[i] <= j <= r[i]).
+    int64_t dp[maxN][2];
+    memset(dp, 0, sizeof(dp));
+    function<void(int, int)> dfs = [&](int node, int par) {
+        EACH(nxt, Tree[node]) {
+            if (nxt == par)
+                continue;
+            dfs(nxt, node);
+            dp[node][0] += max(dp[nxt][0] + abs(A[node].l - A[nxt].l),
+                               dp[nxt][1] + abs(A[node].l - A[nxt].r));
+            dp[node][1] += max(dp[nxt][0] + abs(A[node].r - A[nxt].l),
+                               dp[nxt][1] + abs(A[node].r - A[nxt].r));
+        }
+    };
+    dfs(1, -1);
+    // FOR(i, 1, n + 1) {
+    //     cerr << "THIS IS VERTEX " << i << '\n';
+    //     debug(dp[i][0]);
+    //     debug(dp[i][1]);
+    // }
+    cout << max(dp[1][0], dp[1][1]) << '\n';
 }
 
 int main() {
@@ -158,7 +153,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

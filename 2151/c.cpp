@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,40 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
-    int n;
-
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
-    }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
-        }
-    }
-
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
-        }
-    }
-
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
-};
-
 void solve() {
     int n;
     cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
+    vt<int64_t> A(2 * n), Epref(2 * n, 0), Opref(2 * n, 0), suff(2 * n, 0);
     cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
+    Epref[1] = A[1];
+    Opref[0] = A[0];
+    Opref[1] = Opref[0];
+    FOR(i, 2, 2 * n) {
+        if (i & 1) {
+            Epref[i] = Epref[i - 1] + A[i];
+            Opref[i] = Opref[i - 1];
+        } else {
+            Epref[i] = Epref[i - 1];
+            Opref[i] = Opref[i - 1] + A[i];
+        }
+    }
+    suff[2 * n - 1] = A[2 * n - 1];
+    FOR(i, 2 * n - 2, -1, -1) { suff[i] = suff[i + 1] + A[i]; }
+    int64_t accum = accumulate(all(A), LL(0));
     FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+        if (i & 1) {
+            cout << 2 * (Opref[2 * n - 1 - i] - Opref[i] +
+                         (i > 0 ? suff[2 * n - i] : 0)) -
+                        accum
+                 << ' ';
+        } else {
+            cout << 2 * (Epref[2 * n - 1 - i] - Epref[i] +
+                         (i > 0 ? suff[2 * n - i] : 0)) -
+                        accum
+                 << ' ';
+        }
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
-    }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
-    }
-    cout << ans << '\n';
+    cout << '\n';
 }
 
 int main() {
@@ -158,7 +147,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }

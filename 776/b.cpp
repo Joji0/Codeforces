@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,37 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
-    int n;
+const int maxN = 1e5 + 69;
+vt<bool> isPrime(maxN, true);
 
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
-    }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
+void sieve() {
+    isPrime[0] = isPrime[1] = false;
+    for (int64_t i = 2; i < maxN; i++) {
+        if (isPrime[i]) {
+            for (int64_t j = i * i; j < maxN; j += i) {
+                isPrime[j] = false;
+            }
         }
     }
-
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
-        }
-    }
-
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
-};
+}
 
 void solve() {
     int n;
     cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
-    cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
-    FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+    vt<int> ans;
+    FOR(i, 2, n + 2) {
+        if (isPrime[i]) {
+            ans.pb(1);
+        } else {
+            ans.pb(2);
+        }
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
+    if (n <= 2) {
+        cout << "1\n";
+    } else {
+        cout << "2\n";
     }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
-    }
-    cout << ans << '\n';
+    FOR(sz(ans)) { cout << ans[i] << " \n"[i == sz(ans) - 1]; }
 }
 
 int main() {
@@ -159,9 +145,17 @@ int main() {
 
     int t = 1;
     // cin >> t;
+    sieve();
     while (t--) {
         solve();
     }
 
     return 0;
 }
+
+/*
+ * 2 -> 1 1
+ * 3 -> 1 1 2
+ * 4 -> 1 1 2 1
+ * 5 -> 1 1 2 1 2
+ */

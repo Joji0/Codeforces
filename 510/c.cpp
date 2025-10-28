@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,64 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
-    int n;
-
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
-    }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
-        }
-    }
-
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
-        }
-    }
-
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
-};
-
 void solve() {
     int n;
     cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
-    cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
-    FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+    vt<string> names(n);
+    cin >> names;
+    vt<vt<int>> Graph(26);
+    FOR(n - 1) {
+        string curr = names[i], nxt = names[i + 1];
+        int idx = 0;
+        while (idx < sz(curr) && idx < sz(nxt) && curr[idx] == nxt[idx]) {
+            idx++;
+        }
+        if (idx >= sz(curr))
+            continue;
+        if (idx >= sz(nxt)) {
+            cout << "Impossible\n";
+            return;
+        }
+        Graph[curr[idx] - 'a'].pb(nxt[idx] - 'a');
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
+    vt<int> vis(26, 0);
+    function<bool(int)> containsCycle = [&](int curr) {
+        vis[curr] = 1;
+        EACH(nxt, Graph[curr]) {
+            if (vis[nxt] == 1)
+                return true;
+            if (vis[nxt] == 0 && containsCycle(nxt)) {
+                return true;
+            }
+        }
+        vis[curr] = 2;
+        return false;
+    };
+    FOR(26) {
+        if (!vis[i]) {
+            if (containsCycle(i)) {
+                cout << "Impossible\n";
+                return;
+            }
+        }
     }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
+    vis.assign(26, 0);
+    vt<char> ans;
+    function<void(int)> topologicalSort = [&](int curr) {
+        if (vis[curr] == 1)
+            return;
+        vis[curr] = 1;
+        EACH(nxt, Graph[curr]) { topologicalSort(nxt); }
+        ans.pb(curr + 'a');
+    };
+    FOR(26) {
+        if (!vis[i]) {
+            topologicalSort(i);
+        }
     }
-    cout << ans << '\n';
+    reverse(all(ans));
+    EACH(ch, ans) { cout << ch; }
+    cout << '\n';
 }
 
 int main() {

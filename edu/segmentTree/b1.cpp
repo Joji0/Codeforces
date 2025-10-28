@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,76 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
+const int64_t INF = 1e18;
+
+template <typename T> struct SegmentTree {
+    vector<T> tree;
     int n;
 
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
+    SegmentTree(int n) {
+        this->n = n;
+        tree.assign(4 * n, INF);
     }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
+
+    void build(vector<T> &A, int v, int tl, int tr) {
+        if (tl == tr) {
+            tree[v] = A[tl];
+        } else {
+            int tm = (tl + tr) / 2;
+            build(A, 2 * v, tl, tm);
+            build(A, 2 * v + 1, tm + 1, tr);
+            tree[v] = min(tree[2 * v], tree[2 * v + 1]);
         }
     }
 
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
+    void build(vector<T> &A) { build(A, 1, 0, n - 1); }
+
+    T query(int v, int tl, int tr, int l, int r) {
+        if (l > r)
+            return INF;
+        if (tl == l && tr == r) {
+            return tree[v];
+        }
+        int tm = (tl + tr) / 2;
+        return min(query(2 * v, tl, tm, l, min(r, tm)),
+                   query(2 * v + 1, tm + 1, tr, max(l, tm + 1), r));
+    }
+
+    T query(int l, int r) { return query(1, 0, n - 1, l, r); }
+
+    void update(int v, int tl, int tr, int pos, T nval) {
+        if (tl == tr) {
+            tree[v] = nval;
+        } else {
+            int tm = (tl + tr) / 2;
+            if (pos <= tm) {
+                update(2 * v, tl, tm, pos, nval);
+            } else {
+                update(2 * v + 1, tm + 1, tr, pos, nval);
+            }
+            tree[v] = min(tree[2 * v], tree[2 * v + 1]);
         }
     }
 
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
+    void update(int pos, T val) { update(1, 0, n - 1, pos, val); }
 };
 
 void solve() {
-    int n;
-    cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
+    int n, m;
+    cin >> n >> m;
+    vt<int64_t> A(n);
     cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
-    FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+    SegmentTree<int64_t> ST(n);
+    ST.build(A);
+    FOR(m) {
+        int t, x, y;
+        cin >> t >> x >> y;
+        if (t == 1) {
+            ST.update(x, y);
+        } else {
+            cout << ST.query(x, y - 1) << '\n';
+        }
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
-    }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
-    }
-    cout << ans << '\n';
 }
 
 int main() {

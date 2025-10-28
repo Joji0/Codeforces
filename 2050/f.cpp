@@ -80,6 +80,12 @@ inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
 inline int lsone32(int x) { return x & -x; }
 inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
 inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
 #define debug(x)                                                               \
     cerr << #x << " = ";                                                       \
     _print(x);                                                                 \
@@ -89,6 +95,7 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define vt vector
 #define pb push_back
 #define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
 #define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
 #define F_OR1(e) F_OR(i, 0, e, 1)
 #define F_OR2(i, e) F_OR(i, 0, e, 1)
@@ -99,58 +106,69 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-template <typename T> struct FenwickSum {
-    vector<T> bit;
+template <typename T> struct SegmentTree {
+    vector<T> t;
     int n;
 
-    FenwickSum(int n) {
-        this->n = n + 1;
-        bit.assign(n + 1, 0);
+    SegmentTree(int n) {
+        this->n = n;
+        t.assign(4 * n, 0);
     }
-    FenwickSum(const vector<T> &a) : FenwickSum(a.size()) {
-        for (int i = 0; i < (int)a.size(); i++) {
-            update(i, a[i]);
+
+    void build(const vector<T> &a, int v, int tl, int tr) {
+        if (tl == tr) {
+            t[v] = a[tl];
+        } else {
+            int tm = (tl + tr) / 2;
+            build(a, v * 2, tl, tm);
+            build(a, v * 2 + 1, tm + 1, tr);
+            t[v] = gcd(t[v * 2], t[v * 2 + 1]);
         }
     }
 
-    void update(int idx, T delta) {
-        for (; idx < n; idx += (idx & -idx)) {
-            bit[idx] += delta;
-        }
+    void build(const vector<T> &a) { build(a, 1, 0, n - 1); }
+
+    T query(int v, int tl, int tr, int l, int r) {
+        if (l > r)
+            return 0;
+        if (l == tl && r == tr)
+            return t[v];
+        int tm = (tl + tr) / 2;
+        return gcd(query(v * 2, tl, tm, l, min(r, tm)),
+                   query(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r));
     }
 
-    T sum(int idx) {
-        T ret = 0;
-        for (; idx > 0; idx -= (idx & -idx)) {
-            ret += bit[idx];
-        }
-        return ret;
-    }
-
-    T sum(int l, int r) { return sum(r) - sum(l - 1); }
+    T query(int l, int r) { return query(1, 0, n - 1, l, r); }
 };
 
 void solve() {
-    int n;
-    cin >> n;
-    vt<int64_t> A(n), L(n), R(n);
+    int n, q;
+    cin >> n >> q;
+    vt<int> A(n);
     cin >> A;
-    map<int64_t, int> Lhelper, Rhelper;
-    FOR(n) {
-        Lhelper[A[i]]++;
-        L[i] = Lhelper[A[i]];
+    if (n == 1) {
+        while (q--) {
+            int l, r;
+            cin >> l >> r;
+            cout << "0\n";
+        }
+        return;
     }
-    FOR(i, n - 1, -1, -1) {
-        Rhelper[A[i]]++;
-        R[i] = Rhelper[A[i]];
+    vt<int> diff(n - 1);
+    FOR(n - 1) { diff[i] = abs(A[i + 1] - A[i]); }
+    SegmentTree<int> segT(n - 1);
+    segT.build(diff);
+    while (q--) {
+        int l, r;
+        cin >> l >> r;
+        l--, r--;
+        if (l == r) {
+            cout << "0 ";
+        } else {
+            cout << segT.query(l, r - 1) << ' ';
+        }
     }
-    FenwickSum<int64_t> FT(n + 5);
-    int64_t ans = 0;
-    FOR(i, n - 1, -1, -1) {
-        ans += FT.sum(1, L[i] - 1);
-        FT.update(R[i], 1);
-    }
-    cout << ans << '\n';
+    cout << '\n';
 }
 
 int main() {
@@ -158,7 +176,7 @@ int main() {
     cin.tie(NULL);
 
     int t = 1;
-    // cin >> t;
+    cin >> t;
     while (t--) {
         solve();
     }
