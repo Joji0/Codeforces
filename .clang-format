@@ -1,3 +1,8 @@
 BasedOnStyle: LLVM
-IndentWidth: 4
-TabWidth: 4
+IndentWidth: 8
+TabWidth: 8
+ColumnLimit: 120
+UseTab: Never
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All

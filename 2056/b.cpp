@@ -1,0 +1,287 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+template <typename T> istream &operator>>(istream &in, vector<T> &v) {
+    for (auto &x : v)
+        in >> x;
+    return in;
+}
+template <typename T> ostream &operator<<(ostream &out, const vector<T> &v) {
+    for (auto &x : v)
+        out << x << ' ';
+    return out;
+}
+template <typename T> istream &operator>>(istream &in, vector<vector<T>> &vv) {
+    for (auto &v : vv)
+        in >> v;
+    return in;
+}
+template <typename T>
+ostream &operator<<(ostream &out, const vector<vector<T>> &vv) {
+    for (const auto &v : vv)
+        out << v << '\n';
+    return out;
+}
+template <typename T> void print(const vector<T> &v) {
+    for (auto &x : v)
+        cout << x << " ";
+    cout << '\n';
+}
+template <typename T> void _print(const T &x) { cerr << x; }
+template <typename T> void _print(const vector<T> &v) {
+    cerr << '[';
+    bool first = true;
+    for (const auto &x : v) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(x);
+    }
+    cerr << ']';
+}
+template <typename T> void _print(const vector<vector<T>> &vv) {
+    cerr << "DEBUG:\n[\n";
+    for (const auto &v : vv) {
+        cerr << "  ";
+        _print(v);
+        cerr << '\n';
+    }
+    cerr << "]\n";
+}
+template <typename A, typename B> void _print(const pair<A, B> &p) {
+    cerr << "(";
+    _print(p.first);
+    cerr << ", ";
+    _print(p.second);
+    cerr << ")";
+}
+template <typename T, size_t N> void _print(const array<T, N> &a) {
+    cerr << "[";
+    for (size_t i = 0; i < N; i++) {
+        _print(a[i]);
+        if (i + 1 < N)
+            cerr << ", ";
+    }
+    cerr << "]";
+}
+template <typename T, size_t N> void _print(const T (&a)[N]) {
+    cerr << "[";
+    for (size_t i = 0; i < N; i++) {
+        _print(a[i]);
+        if (i + 1 < N)
+            cerr << ", ";
+    }
+    cerr << "]";
+}
+template <typename T> void _print(const set<T> &s) {
+    cerr << "{";
+    bool first = true;
+    for (auto &x : s) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(x);
+    }
+    cerr << "}";
+}
+template <typename T> void _print(const multiset<T> &s) {
+    cerr << "{";
+    bool first = true;
+    for (auto &x : s) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(x);
+    }
+    cerr << "}";
+}
+template <typename K, typename V> void _print(const map<K, V> &m) {
+    cerr << "{";
+    bool first = true;
+    for (auto &p : m) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(p);
+    }
+    cerr << "}";
+}
+template <typename K, typename V> void _print(const unordered_map<K, V> &m) {
+    cerr << "{";
+    bool first = true;
+    for (auto &p : m) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(p);
+    }
+    cerr << "}";
+}
+template <typename T> void _print(const deque<T> &dq) {
+    cerr << "dq(";
+    for (int i = 0; i < dq.size(); i++) {
+        _print(dq[i]);
+        if (i + 1 < dq.size())
+            cerr << ", ";
+    }
+    cerr << ")";
+}
+template <typename T> void _print(queue<T> q) {
+    cerr << "q(";
+    bool first = true;
+    while (!q.empty()) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(q.front());
+        q.pop();
+    }
+    cerr << ")";
+}
+template <typename T> void _print(stack<T> st) {
+    cerr << "st(";
+    bool first = true;
+    vector<T> temp;
+    while (!st.empty()) {
+        temp.push_back(st.top());
+        st.pop();
+    }
+    reverse(temp.begin(), temp.end());
+    for (int i = 0; i < temp.size(); i++) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(temp[i]);
+    }
+    cerr << ")";
+}
+template <typename T> void _print(priority_queue<T> pq) {
+    cerr << "pq(";
+    bool first = true;
+    while (!pq.empty()) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(pq.top());
+        pq.pop();
+    }
+    cerr << ")";
+}
+template <typename T> void _print(priority_queue<T, vector<T>, greater<T>> pq) {
+    cerr << "minpq(";
+    bool first = true;
+    while (!pq.empty()) {
+        if (!first)
+            cerr << ", ";
+        first = false;
+        _print(pq.top());
+        pq.pop();
+    }
+    cerr << ")";
+}
+template <typename T> bool chmax(T &a, const T &b) {
+    if (a < b) {
+        a = b;
+        return true;
+    }
+    return false;
+}
+template <typename T> bool chmin(T &a, const T &b) {
+    if (b < a) {
+        a = b;
+        return true;
+    }
+    return false;
+}
+template <typename T> void offset(int64_t o, vector<T> &x) {
+    for (auto &a : x)
+        a += o;
+}
+#define CLR_RESET "\033[0m"
+#define CLR_BOLD "\033[1m"
+#define CLR_CYAN "\033[36m"
+#define CLR_YELLOW "\033[33m"
+#define CLR_DIM "\033[2m"
+#define debug(...) debug_impl(#__VA_ARGS__, __VA_ARGS__)
+template <typename T> void debug_impl(const char *name, T &&value) {
+    cerr << CLR_BOLD << CLR_CYAN << name << CLR_RESET << " = " << CLR_YELLOW;
+    _print(value);
+    cerr << CLR_RESET << '\n';
+}
+template <typename T, typename... Args>
+void debug_impl(const char *names, T &&value, Args &&...args) {
+    const char *comma = strchr(names, ',');
+
+    cerr << CLR_BOLD << CLR_CYAN;
+    cerr.write(names, comma - names);
+    cerr << CLR_RESET << " = " << CLR_YELLOW;
+    _print(value);
+
+    cerr << CLR_RESET << " " << CLR_DIM << "| " << CLR_RESET;
+
+    debug_impl(comma + 1, args...);
+}
+inline int popcnt64(int64_t x) { return __builtin_popcountll(x); }
+inline int safe_ctz64(int64_t x) { return x ? __builtin_ctzll(x) : 64; }
+inline int safe_clz64(int64_t x) { return x ? __builtin_clzll(x) : 64; }
+inline int64_t lsone64(int64_t x) { return x & -x; }
+inline int64_t msbone64(int64_t x) { return 1LL << (63 - __builtin_clzll(x)); }
+inline bool ispow2_64(int64_t x) { return x && !(x & (x - 1)); }
+inline int popcnt32(int x) { return __builtin_popcount(x); }
+inline int safe_ctz32(int x) { return x ? __builtin_ctz(x) : 32; }
+inline int safe_clz32(int x) { return x ? __builtin_clz(x) : 32; }
+inline int lsone32(int x) { return x & -x; }
+inline int msbone32(int x) { return 1 << (31 - __builtin_clz(x)); }
+inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
+#ifndef ONLINE_JUDGE
+#define IOJUDGE(title)                                                         \
+    freopen(title ".in", "r", stdin), freopen(title ".out", "w", stdout)
+#else
+#define IOJUDGE(title)
+#endif
+#define all(c) (c).begin(), (c).end()
+#define rall(c) (c).rbegin(), (c).rend()
+#define vt vector
+#define pb push_back
+#define sz(x) (int)(x).size()
+#define LL(x) static_cast<int64_t>(x)
+#define F_OR(i, a, b, s) for (int i = (a); ((s) > 0 ? i < (b) : i > (b)); i += (s))
+#define F_OR1(e) F_OR(i, 0, e, 1)
+#define F_OR2(i, e) F_OR(i, 0, e, 1)
+#define F_OR3(i, b, e) F_OR(i, b, e, 1)
+#define F_OR4(i, b, e, s) F_OR(i, b, e, s)
+#define GET5(a, b, c, d, e, ...) e
+#define F_ORC(...) GET5(__VA_ARGS__, F_OR4, F_OR3, F_OR2, F_OR1)
+#define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
+#define EACH(x, a) for (auto &x : a)
+
+void solve() {
+    int n;
+    cin >> n;
+    vt<vt<char>> G(n, vt<char>(n));
+    FOR(n) {
+        FOR(j, n) { cin >> G[i][j]; }
+    }
+    vt<int> ans(n);
+    iota(all(ans), 0);
+    sort(all(ans), [&](const auto &i, const auto &j) {
+        if (G[i][j] == '1') {
+            return i < j;
+        }
+        return i > j;
+    });
+    offset(1, ans);
+    print(ans);
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int t = 1;
+    cin >> t;
+    while (t--)
+        solve();
+
+    return 0;
+}

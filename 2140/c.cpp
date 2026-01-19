@@ -106,44 +106,26 @@ inline bool ispow2_32(int x) { return x && !(x & (x - 1)); }
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto &x : a)
 
-const int64_t INF = 1e18;
-
 void solve() {
+    // Bob ideal -> stop game
+    // Alice ideal -> swap with biggest gain
+    // cost + swap = (r - l) + (A[r] - A[l])
+    // maximize -> (A[r] + r) - (A[l] + l) (just sorting??)
     int n;
     cin >> n;
     vt<int64_t> A(n);
-    vt<array<int64_t, 3>> Even(n), Odd(n);
     cin >> A;
-    if (n == 1) {
-        cout << A[0] << '\n';
-        return;
-    }
-    int64_t ans, base = 0;
-    FOR(n) { base += A[i] * (i & 1 ? -1 : 1); }
-    ans = base;
-    Even[0][0] = A[0];
-    Even[0][1] = Even[0][2] = 0;
-    FOR(i, 1, n) {
-        Even[i] = Even[i - 1];
-        if (i % 2 == 0) {
-            if (A[i] < Even[i][0]) {
-                Even[i][0] = A[i];
-                Even[i][1] = Even[i][2] = i;
-            } else if (A[i] == Even[i][0]) {
-                Even[i][1] = i;
-            }
-        }
-    }
-    Odd[0][0] = A[1];
-    Odd[0][1] = Odd[0][2] = 1;
-    FOR()
-    if (n > 2) {
-        if (n & 1)
-            chmax(ans, base + n - 1);
+    int64_t base = 0;
+    vt<int64_t> S;
+    FOR(n) {
+        if (i & 1)
+            base -= A[i];
         else
-            chmax(ans, base + n - 2);
+            base += A[i];
+        S.pb(A[i] + i + 1);
     }
-    cout << ans << '\n';
+    sort(all(S));
+    cout << max(base, base + S.back() - S.front()) << '\n';
 }
 
 int main() {
