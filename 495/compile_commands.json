@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "/Users/jojikris/Desktop/CP/templates",
+    "command": "g++ -std=c++20 -Wall -Wno-error=header Template.cpp -o Template",
+    "file": "Template.cpp"
+  }
+]
