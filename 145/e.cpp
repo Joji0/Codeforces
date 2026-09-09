@@ -1,86 +1,92 @@
-#include <bits/stdc++.h>
-using namespace std;
+// 我思う、故に我在り
+#include "pch.hpp"
+#include "ds/segtree/lazy_segtree.hpp"
 
-template <typename T> struct SegmentTree {
-    vector<T> t, lazy;
-    int n;
-    SegmentTree(int n) {
-        this->n = n;
-        t.assign(4 * n, 0);
-        lazy.assign(4 * n, 0);
-    }
-    void push(int v, int tl, int tr) {
-        int tm = (tl + tr) / 2;
-        t[v * 2] += lazy[v] * (tm - tl + 1);
-        t[v * 2 + 1] += lazy[v] * (tr - tm);
-        lazy[v * 2] += lazy[v];
-        lazy[v * 2 + 1] += lazy[v];
-        lazy[v] = 0;
-    }
-    void build(const vector<T> &a, int v, int tl, int tr) {
-        if (tl == tr) {
-            t[v] = a[tl];
-        } else {
-            int tm = (tl + tr) / 2;
-            build(a, v * 2, tl, tm);
-            build(a, v * 2 + 1, tm + 1, tr);
-            t[v] = t[v * 2] + t[v * 2 + 1];
-        }
-    }
-    void build(const vector<T> &a) { build(a, 1, 0, n - 1); }
-    T query(int v, int tl, int tr, int l, int r) {
-        if (l > r)
-            return 0;
-        if (l == tl && r == tr)
-            return t[v];
-        push(v, tl, tr);
-        int tm = (tl + tr) / 2;
-        return max(query(v * 2, tl, tm, l, min(r, tm)),
-                   query(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r));
-    }
-    T query(int l, int r) { return query(1, 0, n - 1, l, r); }
-    void update(int v, int tl, int tr, int l, int r, T add) {
-        if (l > r)
-            return;
-        if (l == tl && r == tr) {
-            t[v] += add * (tr - tl + 1);
-            lazy[v] += add;
-        } else {
-            push(v, tl, tr);
-            int tm = (tl + tr) / 2;
-            update(v * 2, tl, tm, l, min(r, tm), add);
-            update(v * 2 + 1, tm + 1, tr, max(l, tm + 1), r, add);
-            t[v] = t[v * 2] + t[v * 2 + 1];
-        }
-    }
-    void update(int l, int r, T add) { update(1, 0, n - 1, l, r, add); }
+#ifndef M1UNE_ACTED_MONOID_RANGE_FLIP_RANGE_SUM_HPP
+#define M1UNE_ACTED_MONOID_RANGE_FLIP_RANGE_SUM_HPP 1
+
+namespace m1une {
+namespace acted_monoid {
+
+struct Node {
+	int c4, c7, lnds, lnis;
 };
 
+// Acted Monoid for binary arrays (0s and 1s).
+// Supports range bit inversion (flip) and range sum queries.
+struct ActedMonoid {
+	using value_type = Node;
+	using operator_type = bool;  // 'true' means flip the bits in the range
+	static constexpr bool commutative = false;
+	static constexpr bool operator_commutative = true;
+
+	static constexpr value_type id() {
+		return {0, 0, 0, 0};
+	}
+
+	static constexpr value_type op(const value_type& a, const value_type& b) {
+		return {
+		    a.c4 + b.c4,
+		    a.c7 + b.c7,
+		    max(a.lnds + b.c7, a.c4 + b.lnds),
+		    max(a.c7 + b.lnis, a.lnis + b.c4)};
+	}
+
+	static constexpr operator_type op_id() {
+		return false;
+	}
+
+	static constexpr operator_type op_comp(const operator_type& f, const operator_type& g) {
+		return f ^ g;
+	}
+
+	static constexpr value_type mapping(const operator_type& f, const value_type& x) {
+		if (!f) return x;
+		return {x.c7, x.c4, x.lnis, x.lnds};
+	}
+};
+
+}  // namespace acted_monoid
+}  // namespace m1une
+
+#endif	// M1UNE_ACTED_MONOID_RANGE_FLIP_RANGE_SUM_HPP
+
+auto& fastin = m1une::template_io::input();
+auto& fastout = m1une::template_io::output();
+
 void solve() {
-    int n, m;
-    string s;
-    cin >> n >> m >> s;
-    vector<SegmentTree<int>> vSeg(4, SegmentTree<int>(n));
-    while (m--) {
-        string q;
-        cin >> q;
-        if (q == "count") {
-            cout << vSeg[2].query(0, n - 1) << '\n';
-        } else {
-            int l, r;
-            cin >> l >> r;
-        }
-    }
+	int n, m;
+	scan(n, m);
+	string s;
+	scan(s);
+	vc<m1une::acted_monoid::Node> init(n);
+	FOR(i, n) {
+		if (s[i] == '4')
+			init[i] = {1, 0, 1, 1};
+		else
+			init[i] = {0, 1, 1, 1};
+	}
+	m1une::ds::LazySegtree<m1une::acted_monoid::ActedMonoid> seg(init);
+	FOR(m) {
+		string x;
+		scan(x);
+		if (x == "count") {
+			print(seg.all_prod().lnds);
+		} else {
+			int l, r;
+			scan(l, r);
+			l--;
+			seg.apply(l, r, 1);
+		}
+	}
 }
 
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int t = 1;
-    // cin >> t;
-    while (t--)
-        solve();
-
-    return 0;
+	CPP_DUMP_SET_OPTION(max_line_width, 80);
+	CPP_DUMP_SET_OPTION(log_label_func, cpp_dump::log_label::filename());
+	CPP_DUMP_SET_OPTION(enable_asterisk, true);
+	int T = 1;
+	// scan(T);
+	while (T--) solve();
+	return 0;
 }

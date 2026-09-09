@@ -1,21 +1,16 @@
 #include <bits/stdc++.h>
 using namespace std;
-
-void solve() {
-        int N;
-        cin >> N;
-        for (int i = 1; i <= N; i++) {
-                cout << i << " \n"[i == N];
-        }
+int n;
+void solve()
+{
+        cin>>n;
+        for(int i=1;i<=n;i++)cout<<i<<" \n"[i==n];
 }
-
-int main() {
-        ios::sync_with_stdio(false);
-        cin.tie(NULL);
-
-        int t = 1;
-        cin >> t;
-        while (t--) solve();
-
+int main()
+{
+        ios::sync_with_stdio(false);cin.tie(NULL);
+        int tc=1;
+        cin>>tc;
+        while(tc--)solve();
         return 0;
 }
