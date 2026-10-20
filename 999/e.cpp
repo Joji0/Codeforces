@@ -1,71 +1,66 @@
 #include <bits/stdc++.h>
-
 using namespace std;
-typedef long long ll;
-
-vector<int> adj[5005];
-bool vis[5005];
-int par[5005];
-bool temp[5005];
-
-bool checkCycle(int node) {
-    temp[node] = true;
-    for (auto &u : adj[node]) {
-        if (u == node)
-            continue;
-        if (temp[u])
-            return true;
-        if (checkCycle(u))
-            return true;
-    }
-    return false;
-}
-
-bool isCycle(int node) {
-    memset(temp, 0, sizeof(temp));
-    return checkCycle(node);
-}
-
-void dfs(int node) {
-    if (vis[node])
-        return;
-    vis[node] = true;
-    for (auto &u : adj[node]) {
-        dfs(u);
-    }
-}
-
-void solve() {
-    int n, m, s;
-    cin >> n >> m >> s;
-    memset(par, -1, sizeof(par));
-    memset(vis, 0, sizeof(vis));
-    while (m--) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        par[v] = u;
-    }
-    dfs(s);
-    int cnt = 0;
-    for (int i = 1; i <= n; i++) {
-        if ((!vis[i] && (par[i] == -1 || isCycle(i)))) {
-            dfs(i);
-            cnt++;
+using ll=long long;
+int n,m,s,dfn[5005],low[5005],in[5005],stk[5005],clk,top,cnt,scc[5005],sz_scc[5005],vis[5005],indeg[5005],en[5005],ans;
+vector<int>g[5005];
+struct edge
+{
+        int u,v;
+}e[5005];
+void go(int v)
+{
+        dfn[v]=low[v]=++clk;
+        stk[++top]=v,in[v]=1;
+        for(int u:g[v])
+        {
+                if(!dfn[u])
+                {
+                        go(u);
+                        low[v]=min(low[v],low[u]);
+                }
+                else if(in[u])
+                        low[v]=min(low[v],dfn[u]);
         }
-    }
-    cout << cnt << '\n';
+        if(dfn[v]==low[v])
+        {
+                ++cnt;
+                while(1)
+                {
+                        int u=stk[top--];
+                        in[u]=0;
+                        scc[u]=cnt;
+                        sz_scc[cnt]++;
+                        if(u==v)break;
+                }
+        }
 }
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    int t = 1;
-    // cin >> t;
-    while (t--) {
-        solve();
-    }
-
-    return 0;
+void solve()
+{
+        cin>>n>>m>>s;
+        for(int i=1;i<=m;i++)
+        {
+                cin>>e[i].u>>e[i].v;
+                g[e[i].u].push_back(e[i].v);
+        }
+        for(int i=1;i<=n;i++)
+                if(!dfn[i])
+                        go(i);
+        for(int eid=1;eid<=m;eid++)
+        {
+                int i=e[eid].u,j=e[eid].v;
+                if(scc[i]!=scc[j])
+                        indeg[scc[j]]++;
+        }
+        for(int i=1;i<=cnt;i++)
+                if(i!=scc[s]&&!indeg[i])
+                        ans++;
+        cout<<ans<<'\n';
+}
+int main()
+{
+        ios::sync_with_stdio(false);cin.tie(NULL);
+        int tc=1;
+        // cin>>tc;
+        while(tc--)solve();
+        return 0;
 }
